@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bruin Day 2026 — Greg & Pfieffer's Schedule</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #1a1a2e;
+  color: #e8e6e3;
+  min-height: 100vh;
+  padding: 20px;
+}
+.header {
+  text-align: center;
+  padding: 30px 20px 20px;
+  margin-bottom: 24px;
+}
+.header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.4em;
+  color: #FFD100;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.header .subtitle {
+  font-size: 1em;
+  color: #8b8fa3;
+  margin-bottom: 6px;
+}
+.header .date {
+  display: inline-block;
+  background: #2d6ab1;
+  color: #fff;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85em;
+  letter-spacing: 0.04em;
+}
+.legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  font-size: 0.82em;
+}
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-both { background: #FFD100; }
+.dot-pfieffer { background: #4fc3f7; }
+.dot-greg { background: #81c784; }
+.dot-flex { background: #b39ddb; }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.tab-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #8b8fa3;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85em;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: #2d6ab1;
+  color: #fff;
+  border-color: #2d6ab1;
+}
+
+.schedule { max-width: 900px; margin: 0 auto; }
+
+.time-block {
+  margin-bottom: 20px;
+  position: relative;
+}
+.time-label {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2em;
+  color: #FFD100;
+  margin-bottom: 10px;
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.time-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,209,0,0.15);
+}
+
+.event-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.event-card:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+}
+.event-card.priority-must {
+  border-left: 3px solid #FFD100;
+}
+.event-card.priority-maybe {
+  border-left: 3px solid #b39ddb;
+}
+.event-card.priority-nice {
+  border-left: 3px solid rgba(255,255,255,0.2);
+}
+
+.event-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.event-name {
+  font-weight: 700;
+  font-size: 0.95em;
+  color: #f0eeea;
+}
+.event-who {
+  font-size: 0.72em;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.who-both { background: rgba(255,209,0,0.18); color: #FFD100; }
+.who-pfieffer { background: rgba(79,195,247,0.18); color: #4fc3f7; }
+.who-greg { background: rgba(129,199,132,0.18); color: #81c784; }
+
+.event-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8em;
+  color: #8b8fa3;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.event-meta span { display: flex; align-items: center; gap: 4px; }
+
+.event-highlight {
+  font-size: 0.82em;
+  color: #a8a5b8;
+  line-height: 1.5;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.event-highlight strong { color: #c5c2d4; }
+
+.all-day-section {
+  background: rgba(45,106,177,0.1);
+  border: 1px solid rgba(45,106,177,0.2);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+}
+.all-day-section h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1em;
+  color: #4fc3f7;
+  margin-bottom: 10px;
+}
+.all-day-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.85em;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.all-day-item:last-child { border-bottom: none; }
+.all-day-item .loc { color: #8b8fa3; font-size: 0.9em; }
+
+.notes-box {
+  background: rgba(255,209,0,0.06);
+  border: 1px solid rgba(255,209,0,0.12);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 24px;
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: #a8a5b8;
+}
+.notes-box h3 {
+  font-family: 'DM Serif Display', serif;
+  color: #FFD100;
+  margin-bottom: 8px;
+}
+.notes-box li { margin-bottom: 4px; }
+
+.conflict-note {
+  background: rgba(255,87,34,0.1);
+  border: 1px solid rgba(255,87,34,0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8em;
+  color: #ff8a65;
+  margin-bottom: 10px;
+}
+.split-note {
+  background: rgba(79,195,247,0.08);
+  border: 1px solid rgba(79,195,247,0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8em;
+  color: #4fc3f7;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  .header h1 { font-size: 1.6em; }
+  .event-top { flex-direction: column; gap: 6px; }
+  .legend { font-size: 0.75em; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Bruin Day 2026</h1>
+  <div class="subtitle">Greg & Pfieffer's Game Plan</div>
+  <div class="date">Tuesday, May 13 · 8 AM – 4 PM</div>
+</div>
+
+<div class="legend">
+  <span><span class="dot dot-both"></span> Together</span>
+  <span><span class="dot dot-pfieffer"></span> Pfieffer</span>
+  <span><span class="dot dot-greg"></span> Greg</span>
+  <span><span class="dot dot-flex"></span> If time allows</span>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showView('timeline')">Timeline</button>
+  <button class="tab-btn" onclick="showView('split')">Split View</button>
+</div>
+
+<div class="schedule" id="timeline-view">
+
+  <!-- ALL DAY -->
+  <div class="all-day-section">
+    <h3>📍 All Day / Drop-in Anytime</h3>
+    <div class="all-day-item"><span><strong>Admission Tent</strong> — Pick up map, schedule & tote bag</span><span class="loc">Bruin Plaza · 8AM–4PM</span></div>
+    <div class="all-day-item"><span><strong>Information Fair</strong> — 200+ booths: majors, clubs, resources</span><span class="loc">Dickson Plaza · 9:30AM–3PM</span></div>
+    <div class="all-day-item"><span><strong>Housing Open House</strong> — Browse room types, meal plans, apply info</span><span class="loc">Carnesale Commons · 8AM–4PM</span></div>
+    <div class="all-day-item"><span><strong>Fraternity & Sorority Life Open House</strong></span><span class="loc">Kerckhoff 109 · 9:30AM–3PM</span></div>
+    <div class="all-day-item"><span><strong>Acad. Advancement Program Open House</strong></span><span class="loc">Janss Terrace · 9:30AM–3PM</span></div>
+    <div class="all-day-item"><span><strong>Center for Academic Advising Open House</strong></span><span class="loc">Janss Terrace · 9:30AM–3PM</span></div>
+    <div class="all-day-item"><span><strong>Bruin Fitness Center Tour</strong></span><span class="loc">Carnesale Commons · 8AM–4PM</span></div>
+    <div class="all-day-item"><span><strong>John Wooden Center Tour</strong></span><span class="loc">Wooden Center Lobby · 8AM–4PM</span></div>
+    <div class="all-day-item"><span><strong>Housing Tour (self-guided)</strong></span><span class="loc">Sunset Village · 9:30AM–4PM</span></div>
+  </div>
+
+  <!-- 8:00 AM -->
+  <div class="time-block">
+    <div class="time-label">8:00 AM</div>
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">🎒 Arrive & Hit the Admission Tent</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Bruin Plaza</span>
+        <span>⏱ ~15 min</span>
+      </div>
+      <div class="event-highlight">Pick up your Bruin Day map, schedule, and signature tote bag. Snap a photo with Joe & Josie Bruin at Wilson Plaza nearby. Get oriented before the Welcome.</div>
+    </div>
+
+    <div class="event-card priority-maybe">
+      <div class="event-top">
+        <div class="event-name">Pre-Health/Pre-Med School Advising</div>
+        <div class="event-who who-pfieffer">Pfieffer</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Royce Hall, Auditorium</span>
+        <span>⏱ 8:00–8:30 AM</span>
+      </div>
+      <div class="event-highlight">Early session — if you arrive by 8, Pfieffer could catch this while Greg gets tote bags. Covers pre-med advising tracks, course planning, and clinical experience resources. <em>Also offered at 10:00 and 11:00 AM if you'd rather sleep in.</em></div>
+    </div>
+  </div>
+
+  <!-- 9:00 AM -->
+  <div class="time-block">
+    <div class="time-label">9:00 AM</div>
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">🎓 University Welcome</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Pauley Pavilion</span>
+        <span>⏱ 9:00–9:20 AM</span>
+      </div>
+      <div class="event-highlight">Welcome from Chancellor Julio Frenk in legendary Pauley Pavilion. Expect performances from the UCLA Marching Band and Spirit Squad. Get there a few minutes early for seats — last year drew nearly 14,000 visitors.</div>
+    </div>
+  </div>
+
+  <!-- 9:20–10:00 Buffer -->
+  <div class="time-block">
+    <div class="time-label">9:20 AM</div>
+    <div class="event-card priority-nice">
+      <div class="event-top">
+        <div class="event-name">🚶 Walk to next sessions + browse Information Fair</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Dickson Plaza (on the way)</span>
+        <span>⏱ ~30 min buffer</span>
+      </div>
+      <div class="event-highlight">The Information Fair at Dickson Plaza has 200+ booths — academic departments, student orgs, campus resources. Great for a quick browse between sessions. Walk through on the way to the 10 AM block.</div>
+    </div>
+  </div>
+
+  <!-- 10:00 AM — SPLIT -->
+  <div class="time-block">
+    <div class="time-label">10:00 AM</div>
+    <div class="split-note">⚡ Split up here — lots of must-see sessions overlap at 10:00 AM</div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">Student Organizations & Clubs: Finding Your Place</div>
+        <div class="event-who who-pfieffer">Pfieffer</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Schoenberg Hall</span>
+        <span>⏱ 10:00–10:30 AM</span>
+      </div>
+      <div class="event-highlight">Overview of UCLA's 1,200+ student organizations. Learn how to find clubs that match your interests, from cultural groups to professional orgs to activism.</div>
+    </div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">Parent & Family Involvement in a Student's UCLA Experience</div>
+        <div class="event-who who-greg">Greg</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 James West Alumni Center, Founders' Room</span>
+        <span>⏱ 10:00–10:30 AM</span>
+      </div>
+      <div class="event-highlight">For parents/families — how to stay connected and support your student's transition. Covers the Parent & Family Association, communication tips, and involvement opportunities.</div>
+    </div>
+  </div>
+
+  <!-- 10:30 AM -->
+  <div class="time-block">
+    <div class="time-label">10:30 AM</div>
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">🏠 Housing: What It's Like to Live on Campus</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Northwest Campus Auditorium</span>
+        <span>⏱ 10:30–11:00 AM</span>
+      </div>
+      <div class="event-highlight">All about the Hill — UCLA's on-campus residential community. Freshmen get a guaranteed 4-year housing offer (apply by May 1). Covers room types, dining, amenities like fitness center, streaming, and the vibrant residential life programs. Most on-campus rooms transitioning to triple occupancy for 2026–27.</div>
+    </div>
+  </div>
+
+  <!-- 11:00 AM — SPLIT -->
+  <div class="time-block">
+    <div class="time-label">11:00 AM</div>
+    <div class="split-note">⚡ Split up again — Greek Life and Orientation run simultaneously</div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">Fraternity & Sorority Life at UCLA</div>
+        <div class="event-who who-pfieffer">Pfieffer</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Haines Hall, Room 39</span>
+        <span>⏱ 11:00–11:30 AM</span>
+      </div>
+      <div class="event-highlight">Presentation on UCLA's Greek community — recruitment timelines, what to expect from rush, the different councils (IFC, Panhellenic, NPHC, etc.), and how Greek life fits with academics.</div>
+    </div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">New Student & Family Orientation: The Bruin Journey Starts Here</div>
+        <div class="event-who who-greg">Greg</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 De Neve Plaza, Learning Auditorium</span>
+        <span>⏱ 11:00–11:30 AM</span>
+      </div>
+      <div class="event-highlight">Covers what to expect from New Student Orientation — registration, academic planning, and how UCLA helps new students transition to Bruin life. <em>Also offered at 10:00, 1:30, and 2:30 if Pfieffer wants to catch a later one too.</em></div>
+    </div>
+
+    <div class="event-card priority-maybe">
+      <div class="event-top">
+        <div class="event-name">Pre-Health/Pre-Med School Advising</div>
+        <div class="event-who who-pfieffer">Pfieffer (alt)</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Royce Hall, Auditorium</span>
+        <span>⏱ 11:00–11:30 AM</span>
+      </div>
+      <div class="event-highlight">If Pfieffer didn't catch the 8 AM session, this is the last offering. Conflicts with Greek Life above — choose one. Could also skip if pre-med isn't a strong interest.</div>
+    </div>
+
+    <div class="event-card priority-nice">
+      <div class="event-top">
+        <div class="event-name">Student Health and Well-Being</div>
+        <div class="event-who who-both">If time</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Kinsey Pavilion, Room 1220B</span>
+        <span>⏱ 11:00–11:30 AM</span>
+      </div>
+      <div class="event-highlight">Covers UCLA's Counseling & Psychological Services (CAPS), Student Health Center, wellness programs, and how to access care. <em>Also at 10:00 and 12:00 — Greg could pop in at noon while Pfieffer is elsewhere.</em></div>
+    </div>
+  </div>
+
+  <!-- 11:30–11:45 buffer -->
+  <div class="time-block">
+    <div class="time-label">11:30 AM</div>
+    <div class="event-card priority-nice">
+      <div class="event-top">
+        <div class="event-name">🚶 Regroup + Walk Open Houses & Tours</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>⏱ ~30 min</span>
+      </div>
+      <div class="event-highlight">Great window to hit the drop-in open houses together: <strong>Fraternity & Sorority Life</strong> (Kerckhoff 109), <strong>Bruin Fitness Center</strong> tour (Carnesale), <strong>John Wooden Center</strong> tour, <strong>Housing</strong> open house (Carnesale, Palisades Room), <strong>Academic Advising</strong> & <strong>AAP</strong> (Janss Terrace). All open until 3–4 PM.</div>
+    </div>
+  </div>
+
+  <!-- 11:45 -->
+  <div class="time-block">
+    <div class="time-label">11:45 AM</div>
+    <div class="event-card priority-nice">
+      <div class="event-top">
+        <div class="event-name">🎺 UCLA Band Performance</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Bruin Plaza</span>
+        <span>⏱ ~15 min</span>
+      </div>
+      <div class="event-highlight">The UCLA Marching Band performs at Bruin Plaza — if you're nearby, it's a fun energy break. Second performance at 12:45 PM.</div>
+    </div>
+  </div>
+
+  <!-- 12:00 PM -->
+  <div class="time-block">
+    <div class="time-label">12:00 PM</div>
+    <div class="conflict-note">🍽 Heads up — visitor info warns that lunch lines can be long. Plan ahead or eat early/late.</div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">Fiat Lux Program / UCLA Cluster Program</div>
+        <div class="event-who who-pfieffer">Pfieffer</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Fowler Museum, Lenart Auditorium</span>
+        <span>⏱ 12:00–12:30 PM</span>
+      </div>
+      <div class="event-highlight">Fiat Lux seminars are small, one-unit courses taught by top faculty on unique topics — a great way to explore interests outside your major. Cluster courses are intensive, year-long interdisciplinary experiences for first-years. <em>Also offered at 10:00 and 11:00 AM.</em></div>
+    </div>
+
+    <div class="event-card priority-nice">
+      <div class="event-top">
+        <div class="event-name">Student Health and Well-Being</div>
+        <div class="event-who who-greg">Greg</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Kinsey Pavilion, Room 1220B</span>
+        <span>⏱ 12:00–12:30 PM</span>
+      </div>
+      <div class="event-highlight">If you didn't catch it at 11:00, this is a good slot while Pfieffer is at Fiat Lux. Covers counseling, health center access, and wellness resources.</div>
+    </div>
+  </div>
+
+  <!-- 12:30–1:00 Lunch -->
+  <div class="time-block">
+    <div class="time-label">12:30 PM</div>
+    <div class="event-card priority-nice" style="border-left-color: #ff8a65;">
+      <div class="event-top">
+        <div class="event-name">🍕 Lunch Break + More Open Houses</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>⏱ ~30 min</span>
+      </div>
+      <div class="event-highlight">Grab food from ASUCLA dining options. Use this time to also walk by any remaining open houses — Housing Tour at Sunset Village, Academic Advising at Janss Terrace, or browse more of the Information Fair before it closes at 3 PM.</div>
+    </div>
+  </div>
+
+  <!-- 1:00 PM -->
+  <div class="time-block">
+    <div class="time-label">1:00 PM</div>
+    <div class="split-note">⚡ Big 1 PM block — Study Abroad and Undergrad Research run at the same time</div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">🌍 Study Abroad: Education Through Exploration</div>
+        <div class="event-who who-pfieffer">Pfieffer</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Schoenberg Hall</span>
+        <span>⏱ 1:00–1:30 PM</span>
+      </div>
+      <div class="event-highlight">UCLA offers 200+ programs in 40+ countries. Learn about semester, year, and summer options, how study abroad fits with your degree plan, financial aid abroad, and application timelines.</div>
+    </div>
+
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">🔬 Undergraduate Research Programs</div>
+        <div class="event-who who-greg">Greg</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Ackerman Union, Grand Ballroom</span>
+        <span>⏱ 1:00–1:30 PM</span>
+      </div>
+      <div class="event-highlight">UCLA is a top research university — undergrads can work alongside faculty in labs, creative projects, and field research. Covers how to find research opportunities, programs like URSP, and funding support. <em>Greg can report back; also offered at 3:00 PM if Pfieffer wants to attend directly.</em></div>
+    </div>
+  </div>
+
+  <!-- 1:30 PM -->
+  <div class="time-block">
+    <div class="time-label">1:30 PM</div>
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">New Student & Family Orientation: The Bruin Journey Starts Here</div>
+        <div class="event-who who-pfieffer">Pfieffer</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 De Neve Plaza, Learning Auditorium</span>
+        <span>⏱ 1:30–2:00 PM</span>
+      </div>
+      <div class="event-highlight">Pfieffer can catch this session since Greg attended at 11:00. Covers orientation logistics, enrollment steps, academic planning, and the transition to campus life.</div>
+    </div>
+
+  </div>
+
+  <!-- 2:00 PM -->
+  <div class="time-block">
+    <div class="time-label">2:00 PM</div>
+    <div class="event-card priority-must">
+      <div class="event-top">
+        <div class="event-name">🏋️ Bruin Fitness Center / John Wooden Center Tours</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>📍 Carnesale Commons (below Bruin Plate) + Wooden Center Lobby</span>
+        <span>⏱ drop-in, ~30 min</span>
+      </div>
+      <div class="event-highlight">Pfieffer finishes Orientation at 2:00 — regroup and walk the fitness facilities together. The Bruin Fitness Center is in Carnesale Commons and the John Wooden Center lobby is nearby. Both self-guided drop-in tours, open until 4 PM.</div>
+    </div>
+
+    <div class="event-card priority-nice">
+      <div class="event-top">
+        <div class="event-name">🚶 Wind down + final walk-throughs</div>
+        <div class="event-who who-both">Together</div>
+      </div>
+      <div class="event-meta">
+        <span>⏱ 2:30 PM onward</span>
+      </div>
+      <div class="event-highlight">Most presentations repeat in this block if you missed anything. The Housing Tour at Sunset Village runs until 4 PM. The Information Fair closes at 3 PM — last chance to visit any booths. Hit any remaining open houses before they close.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SPLIT VIEW -->
+<div class="schedule" id="split-view" style="display:none;">
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Pfieffer Column -->
+    <div>
+      <h2 style="font-family:'DM Serif Display',serif; color:#4fc3f7; font-size:1.3em; margin-bottom:14px; text-align:center;">Pfieffer's Day</h2>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">8:00 — Pre-Med Advising <em style="color:#8b8fa3;">(optional early)</em></div><div class="event-meta"><span>Royce Hall</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">9:00 — University Welcome 🎓</div><div class="event-meta"><span>Pauley Pavilion</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">10:00 — Student Orgs & Clubs</div><div class="event-meta"><span>Schoenberg Hall</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">10:30 — Housing Presentation 🏠</div><div class="event-meta"><span>NW Campus Auditorium</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">11:00 — Greek Life Presentation</div><div class="event-meta"><span>Haines Hall, Rm 39</span></div></div>
+
+      <div class="event-card priority-nice"><div class="event-name" style="font-size:0.85em;">11:30 — Open Houses / Browse Fair</div><div class="event-meta"><span>Various</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">12:00 — Fiat Lux / Cluster Program</div><div class="event-meta"><span>Fowler Museum</span></div></div>
+
+      <div class="event-card" style="border-left:3px solid #ff8a65;"><div class="event-name" style="font-size:0.85em;">12:30 — Lunch 🍕</div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">1:00 — Study Abroad 🌍</div><div class="event-meta"><span>Schoenberg Hall</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">1:30 — New Student Orientation</div><div class="event-meta"><span>De Neve Plaza</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">2:00 — Fitness / Wooden Ctr Tours 🏋️</div><div class="event-meta"><span>Carnesale / Wooden Ctr</span></div></div>
+
+      <div class="event-card priority-nice"><div class="event-name" style="font-size:0.85em;">2:30+ — Remaining open houses / tours</div></div>
+    </div>
+
+    <!-- Greg Column -->
+    <div>
+      <h2 style="font-family:'DM Serif Display',serif; color:#81c784; font-size:1.3em; margin-bottom:14px; text-align:center;">Greg's Day</h2>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">8:00 — Admission Tent (tote bags!) 🎒</div><div class="event-meta"><span>Bruin Plaza</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">9:00 — University Welcome 🎓</div><div class="event-meta"><span>Pauley Pavilion</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">10:00 — Parent & Family Session</div><div class="event-meta"><span>James West Alumni Ctr</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">10:30 — Housing Presentation 🏠</div><div class="event-meta"><span>NW Campus Auditorium</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">11:00 — New Student Orientation</div><div class="event-meta"><span>De Neve Plaza</span></div></div>
+
+      <div class="event-card priority-nice"><div class="event-name" style="font-size:0.85em;">11:30 — Open Houses / Browse Fair</div><div class="event-meta"><span>Various</span></div></div>
+
+      <div class="event-card priority-nice"><div class="event-name" style="font-size:0.85em;">12:00 — Student Health & Well-Being</div><div class="event-meta"><span>Kinsey Pavilion</span></div></div>
+
+      <div class="event-card" style="border-left:3px solid #ff8a65;"><div class="event-name" style="font-size:0.85em;">12:30 — Lunch 🍕</div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">1:00 — Undergrad Research 🔬</div><div class="event-meta"><span>Ackerman Grand Ballroom</span></div></div>
+
+      <div class="event-card priority-nice"><div class="event-name" style="font-size:0.85em;">1:30 — Browse open houses / Info Fair</div><div class="event-meta"><span>Various</span></div></div>
+
+      <div class="event-card priority-must"><div class="event-name" style="font-size:0.85em;">2:00 — Fitness / Wooden Ctr Tours 🏋️</div><div class="event-meta"><span>Carnesale / Wooden Ctr</span></div></div>
+
+      <div class="event-card priority-nice"><div class="event-name" style="font-size:0.85em;">2:30+ — Remaining open houses / tours</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="notes-box" style="max-width:900px; margin:24px auto;">
+  <h3>📝 Tips & Notes</h3>
+  <ul style="padding-left:18px; margin-top:8px;">
+    <li><strong>Housing app deadline:</strong> Submit by May 1, 2026 for guaranteed 4-year housing.</li>
+    <li><strong>Wear comfortable shoes</strong> — campus is hilly and you'll walk a lot.</li>
+    <li><strong>Bring a water bottle</strong> — free refill stations across campus.</li>
+    <li><strong>Parking:</strong> Structures 4 & 7 (Sunset Blvd exit) for north campus; Structures 2 & 8 (Wilshire exit) for south. Shuttle runs 8 AM–4:30 PM.</li>
+    <li><strong>Look for yellow-shirt volunteers</strong> with "Ask Me" signs if you get lost.</li>
+    <li><strong>No official check-in</strong> — the Admission Tent is your starting point but it's casual.</li>
+    <li>Most 30-min presentations repeat 2–3× during the day, so if you miss one, check for a later slot.</li>
+    <li>The <strong>Information Fair closes at 3 PM</strong> — don't leave it for last.</li>
+  </ul>
+</div>
+
+<script>
+function showView(view) {
+  document.getElementById('timeline-view').style.display = view === 'timeline' ? 'block' : 'none';
+  document.getElementById('split-view').style.display = view === 'split' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
